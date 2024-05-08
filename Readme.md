@@ -20,7 +20,7 @@ Once you have created your project from this template, you should set up this re
    - Change the current working directory to your local project.
    - Run the following command to add this repository as an upstream:
      ```
-     git remote add upstream https://github.com/original-owner/repository-name.git
+     git remote add upstream https://github.com/Nonary/SunshineScriptInstaller.git
      ```
 
 2. **Verify the Upstream Repository**
@@ -47,7 +47,7 @@ To keep your repository up-to-date with the changes made in the template, you ca
      ```
    - Merge the changes from the upstream main branch:
      ```
-     git merge upstream/main
+     git merge upstream/main --allow-unrelated-histories
      ```
    - If there are no conflicts, this will update your branch with the latest changes.
 
