@@ -1,4 +1,4 @@
-# Project Name
+# Sunshine Script Installer Template
 
 This repository is designed to be used as a template for creating similar projects. It allows you to maintain an up-to-date version of the template while also customizing and adding your own content.
 
@@ -59,15 +59,7 @@ To keep your repository up-to-date with the changes made in the template, you ca
 
 ## Making Your Own Changes
 
-You can now proceed to make your own changes to the project. It's recommended to regularly sync with the upstream repository to ensure you have the latest updates and avoid merge conflicts.
+You can now proceed to make your own changes to the project. It's recommended to regularly sync with the upstream repository to ensure you have the latest updates.
 
-## Contributing
 
-Contributions to this template are welcome! Please read our contributing guidelines in `CONTRIBUTING.md` to learn how you can contribute.
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
 Feel free to star this repository if you find it useful! Follow the maintenance updates and contribute to the original template to help improve it for everyone.
