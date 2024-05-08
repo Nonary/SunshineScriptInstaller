@@ -12,10 +12,10 @@ if ($null -eq $async) {
 
 . .\Helpers.ps1
 . .\Events.ps1
+Start-Transcript .\log.txt
 
 
 ## Modifications of the Sunshine Script Installer Template go here
-
 
 
 ## End modifications block
