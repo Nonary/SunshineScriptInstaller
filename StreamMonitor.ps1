@@ -12,7 +12,9 @@ if ($null -eq $async) {
 
 . .\Helpers.ps1
 . .\Events.ps1
-Start-Transcript .\log.txt
+
+Remove-OldLogs
+Start-Logging
 
 # OPTIONAL MUTEX HANDLING
 # Create a mutex to prevent multiple instances of this script from running simultaneously.
@@ -56,11 +58,11 @@ try {
             }
         }
     
-    } -ArgumentList $path, $settings.gracePeriod
+    } -ArgumentList $path, $settings.gracePeriod | Out-Null
 
 
     # This might look like black magic, but basically we don't have to monitor this pipe because it fires off an event.
-    Create-Pipe $scriptName
+    Create-Pipe $scriptName | Out-Null
 
     Write-Host "Waiting for the next event to be called... (for starting/ending stream)"
     while ($true) {
@@ -89,5 +91,5 @@ finally {
     if ($mutex) {
         $mutex.ReleaseMutex()
     }
-    Stop-Transcript
+    Stop-Logging
 }
