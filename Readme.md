@@ -47,7 +47,7 @@ To keep your repository up-to-date with the changes made in the template, you ca
      ```
    - Merge the changes from the upstream main branch:
      ```
-     git merge upstream/main --squash --no-commit
+     git merge upstream/main --squash --no-commit --allow-unrelated-histories
      ```
    - If there are no conflicts, this will update your branch with the latest changes.
 
@@ -63,5 +63,3 @@ You can now proceed to make your own changes to the project. It's recommended to
 
 
 Feel free to star this repository if you find it useful! Follow the maintenance updates and contribute to the original template to help improve it for everyone.
-
-Test Commit
