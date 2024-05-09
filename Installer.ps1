@@ -7,12 +7,18 @@ $scriptPath = "$scriptRoot\StreamMonitor.ps1"
 
 # This script modifies the global_prep_cmd setting in the Sunshine configuration file
 
-# Check if the current user has administrator privileges
-$isAdmin = [bool]([System.Security.Principal.WindowsIdentity]::GetCurrent().groups -match 'S-1-5-32-544')
+function Test-UACEnabled {
+    $key = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+    $uacEnabled = Get-ItemProperty -Path $key -Name 'EnableLUA'
+    return [bool]$uacEnabled.EnableLUA
+}
 
-# If the current user is not an administrator, re-launch the script with elevated privileges
-if (-not $isAdmin) {
-    Start-Process powershell.exe  -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -NoExit -File `"$filePath`" $install"
+
+$isAdmin = [bool]([System.Security.Principal.WindowsIdentity]::GetCurrent().Groups -match 'S-1-5-32-544')
+
+# If the user is not an administrator and UAC is enabled, re-launch the script with elevated privileges
+if (-not $isAdmin -and (Test-UACEnabled)) {
+    Start-Process powershell.exe -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -NoExit -File `"$filePath`" $install"
     exit
 }
 
@@ -101,27 +107,6 @@ function Remove-Command {
     return [object[]]$filteredCommands
 }
 
-function Verify-Installation {
-
-    # Get the current value of global_prep_cmd as a JSON string
-    $globalPrepCmdJson = Get-GlobalPrepCommand -ConfigPath $confPath
-
-    # Convert the JSON string to an array of objects
-    $globalPrepCmdArray = $globalPrepCmdJson | ConvertFrom-Json
-    $matchingCommands = @()
-
-    # Find any existing matching Commands
-    foreach ($command in $globalPrepCmdArray) {
-        if ($command.do -like "*$scriptName*") {
-            $matchingCommands += $command
-        }
-    }
-    if(-not ($matchingCommands.Length -gt 0)){
-        throw "Could not verify that the script had successfully installed."
-    }
-}
-
-
 # Set a new value for global_prep_cmd in the configuration file
 function Set-GlobalPrepCommand {
     param (
@@ -191,7 +176,6 @@ else {
 }
 
 Set-GlobalPrepCommand $commands
-Verify-Installation
 
 $sunshineService = Get-Service -ErrorAction Ignore | Where-Object {$_.Name -eq 'sunshinesvc' -or $_.Name -eq 'SunshineService'}
 # In order for the commands to apply we have to restart the service

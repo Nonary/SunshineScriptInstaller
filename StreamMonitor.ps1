@@ -14,11 +14,18 @@ if ($null -eq $async) {
 . .\Events.ps1
 Start-Transcript .\log.txt
 
+# OPTIONAL MUTEX HANDLING
+# Create a mutex to prevent multiple instances of this script from running simultaneously.
+$lock = $false
+$mutex = New-Object System.Threading.Mutex($false, $scriptName, [ref]$lock)
 
-## Modifications of the Sunshine Script Installer Template go here
+# Exit the script if another instance is already running.
+if (-not $mutex.WaitOne(0)) {
+    Write-Host "Exiting: Another instance of the script is currently running."
+    exit
+}
+# END OF OPTIONAL MUTEX HANDLING
 
-
-## End modifications block
 
 try {
     
@@ -52,8 +59,7 @@ try {
     } -ArgumentList $path, $settings.gracePeriod
 
 
-    # Wait a minute, this looks like black magic! This pipe fires an event 
-    # when it finishe; No manual monitoring required!
+    # This might look like black magic, but basically we don't have to monitor this pipe because it fires off an event.
     Create-Pipe $scriptName
 
     Write-Host "Waiting for the next event to be called... (for starting/ending stream)"
@@ -80,5 +86,8 @@ try {
     }
 }
 finally {
+    if ($mutex) {
+        $mutex.ReleaseMutex()
+    }
     Stop-Transcript
 }
