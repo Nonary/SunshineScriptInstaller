@@ -7,7 +7,7 @@ $script:attempt = 0
 function OnStreamEndAsJob() {
 
     return Start-Job -Name "$scriptName-OnStreamEnd" -ScriptBlock {
-        param($path)
+        param($path, $arguments)
         Set-Location $path
         . .\Helpers.ps1
         . .\Events.ps1
@@ -30,13 +30,13 @@ function OnStreamEndAsJob() {
             }
 
 
-            if ((OnStreamEnd)) {
+            if ((OnStreamEnd $arguments)) {
                 break;
             }
         } 
         # We no longer need to listen for the end command since we've already restored at this point.
         Send-PipeMessage "$scriptName-OnStreamEnd" Terminate
-    } -ArgumentList $path
+    } -ArgumentList $path, $script:arguments
 }
 
 

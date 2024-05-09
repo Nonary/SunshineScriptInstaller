@@ -47,7 +47,7 @@ To keep your repository up-to-date with the changes made in the template, you ca
      ```
    - Merge the changes from the upstream main branch:
      ```
-     git merge upstream/main --allow-unrelated-histories
+     git merge upstream/main --squash --no-commit
      ```
    - If there are no conflicts, this will update your branch with the latest changes.
 
