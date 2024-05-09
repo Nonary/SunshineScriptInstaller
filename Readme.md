@@ -57,9 +57,27 @@ To keep your repository up-to-date with the changes made in the template, you ca
      git push origin main
      ```
 
-## Making Your Own Changes
 
-You can now proceed to make your own changes to the project. It's recommended to regularly sync with the upstream repository to ensure you have the latest updates.
+## Making Your Own Customizations
 
+### Modifying Event Handlers
 
-Feel free to star this repository if you find it useful! Follow the maintenance updates and contribute to the original template to help improve it for everyone.
+The `Events.ps1` file contains predefined PowerShell functions that serve as event handlers for specific streaming events in the Sunshine application. To customize the behavior of your streaming setup, you can add your own code to the following functions:
+
+- **OnStreamStart**: This function is triggered automatically when your stream begins. Here, you can insert any initialization code, such as setting up your environment, logging the start time, or activating certain features in your stream setup.
+
+- **OnStreamEnd**: This function is called when your stream concludes. It's a good place to insert cleanup code, such as deallocating resources, logging the end of the session, or sending post-stream notifications.
+
+### Regularly Updating Your Repository
+
+To ensure that your project remains up-to-date with the latest features and bug fixes, it's recommended to regularly sync with the upstream repository. This involves pulling the latest changes from the original source and merging them into your local repository. Staying updated can help you avoid conflicts and benefit from the latest improvements made by other contributors.
+
+### Engaging with the Community
+
+If you find the Sunshine project beneficial, consider starring the repository on GitHub. This not only shows appreciation to the maintainers but also helps increase the visibility of the project, attracting more contributors and users.
+
+- **Star the Repository**: Visit the main page of the Sunshine GitHub repository and click on the 'Star' button to bookmark it. This is a simple way to acknowledge the work of the developers and maintainers.
+
+- **Follow Maintenance Updates**: Keep an eye on the repository for ongoing updates and changes. Regular visits can keep you informed about new features and important fixes.
+
+- **Contribute to the Template**: If you have ideas on how to improve the project or if you've developed enhancements that could benefit others, consider contributing your changes back to the repository. 
