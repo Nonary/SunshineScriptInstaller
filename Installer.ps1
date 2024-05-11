@@ -157,6 +157,41 @@ function Set-GlobalPrepCommand {
     $config | Set-Content -Path $confPath -Force
 }
 
+function OrderCommands($commands){
+    if($settings.installationOrderPreferences.enabled){
+        $scriptNames = $settings.installationOrderPreferences.scriptNames
+
+        # Create an empty array for the sorted commands
+        $sortedCommands = @()
+
+        # Loop through the script names in the order specified in the settings
+        foreach ($scriptName in $scriptNames) {
+            # Find the commands with the matching script name and add them to the sorted commands
+            $matchingCommands = $commands | Where-Object { 
+                $doArgs = $_.do -split ' '
+                $nIndex = $doArgs.IndexOf('-n')
+                if ($nIndex -ne -1 -and $nIndex -lt $doArgs.Count - 1) {
+                    $doArgs[$nIndex + 1] -eq $scriptName
+                } else {
+                    $false
+                }
+            }
+            $sortedCommands += $matchingCommands
+
+            # Remove the matching commands from the original commands array
+            $commands = $commands | Where-Object { $_ -notin $matchingCommands }
+        }
+
+        # Add any remaining commands that were not included in the sorted commands to the end
+        $sortedCommands += $commands
+
+        return $sortedCommands
+    }
+    else {
+        # If the installation order preference is not enabled, return the commands as is
+        return $commands
+    }
+}
 function Add-Command {
 
     # Remove any existing commands that contain the scripts name from the global_prep_cmd value
@@ -180,6 +215,8 @@ if ($install -eq 1) {
 else {
     $commands = Remove-Command 
 }
+
+$commands = OrderCommands $commands
 
 Set-GlobalPrepCommand $commands
 
