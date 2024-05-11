@@ -11,6 +11,7 @@ param(
 $path = (Split-Path $MyInvocation.MyCommand.Path -Parent)
 Set-Location $path
 . .\Helpers.ps1 -n $scriptName
+. .\Events.ps1 -n $scriptName
 $settings = Get-Settings
 $DebugPreference = if ($settings.debug) { "Continue" } else { "SilentlyContinue" }
 # Since pre-commands in sunshine are synchronous, we'll launch this script again in another powershell process
@@ -22,10 +23,6 @@ if ($startInBackground -eq $false) {
     exit
 }
 
-
-Write-Host "Script Name: $scriptName"
-. .\Helpers.ps1 -n $scriptName
-. .\Events.ps1 -n $scriptName
 
 Remove-OldLogs
 Start-Logging
