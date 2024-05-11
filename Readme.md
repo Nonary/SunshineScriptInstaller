@@ -58,15 +58,22 @@ To keep your repository up-to-date with the changes made in the template, you ca
      ```
 
 
-## Making Your Own Customizations
+### Customizing the Script
 
-### Modifying Event Handlers
+### Steps to Customize
+1. Add your custom functions to the `Events.ps1` file.
+2. Implement your desired actions in the `OnStreamStart` and `OnStreamEnd` functions.
+3. Update the `-n` parameter in `Install.bat` and `Uninstall.bat` to match the name of your script.
 
-The `Events.ps1` file contains predefined PowerShell functions that serve as event handlers for specific streaming events in the Sunshine application. To customize the behavior of your streaming setup, you can add your own code to the following functions:
+### Understanding Event Handlers
 
-- **OnStreamStart**: This function is triggered automatically when your stream begins. Here, you can insert any initialization code, such as setting up your environment, logging the start time, or activating certain features in your stream setup.
+The `Events.ps1` file includes predefined PowerShell functions that act as event handlers for specific streaming events in the Sunshine application. You can tailor your streaming setup by adding your own code to these functions:
 
-- **OnStreamEnd**: This function is called when your stream concludes. It's a good place to insert cleanup code, such as deallocating resources, logging the end of the session, or sending post-stream notifications.
+- **OnStreamStart**: This function is activated when your stream starts. You can add initialization code here, such as setting up your environment, logging the start time, or enabling certain features in your stream setup.
+
+- **OnStreamEnd**: This function is invoked when your stream ends. It's an ideal location for cleanup code, like deallocating resources, logging the end of the session, or sending post-stream notifications.
+
+> **Note**: Don't forget to update the script name in both `Install.bat` and `Uninstall.bat`. If not updated, it will default to `SunshineScriptInstaller`.
 
 ### Regularly Updating Your Repository
 

@@ -1,4 +1,5 @@
 {
+    "debug": false,
     "gracePeriod": 180,
     "startDelay": 1
 }

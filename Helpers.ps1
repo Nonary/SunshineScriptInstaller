@@ -1,16 +1,22 @@
-param($terminate)
+param(
+    [Parameter(Position=0, Mandatory=$true)]
+    [Alias("n")]
+    [string]$scriptName,
+    [Alias("t")]
+    [Parameter(Position=1, Mandatory=$false)]
+    [bool]$terminate
+)
 $path = (Split-Path $MyInvocation.MyCommand.Path -Parent)
-$scriptName = Split-Path $path -Leaf
 Set-Location $path
 $script:attempt = 0
 
 function OnStreamEndAsJob() {
 
     return Start-Job -Name "$scriptName-OnStreamEnd" -ScriptBlock {
-        param($path, $arguments)
+        param($path, $scriptName, $arguments)
         Set-Location $path
-        . .\Helpers.ps1
-        . .\Events.ps1
+        . .\Helpers.ps1 -n $scriptName
+        . .\Events.ps1 -n $scriptName
     
         Write-Host "Stream has ended, now invoking code"
         $job = Create-Pipe -pipeName "$scriptName-OnStreamEnd" 
@@ -40,7 +46,7 @@ function OnStreamEndAsJob() {
         }
         # Allow job to complete by terminating the pipe, this line wouldn't be reached unless the OnStreamEnd was successful.
         Send-PipeMessage "$scriptName-OnStreamEnd" Terminate
-    } -ArgumentList $path, $script:arguments
+    } -ArgumentList $path, $scriptName, $script:arguments
 }
 
 
@@ -152,6 +158,28 @@ function Stop-Logging {
     Stop-Transcript
 }
 
+
+function Get-Settings {
+    # Read the file content
+    $jsonContent = Get-Content -Path ".\settings.json" -Raw
+
+    # Remove single line comments
+    $jsonContent = $jsonContent -replace '//.*', ''
+
+    # Remove multi-line comments
+    $jsonContent = $jsonContent -replace '/\*[\s\S]*?\*/', ''
+
+    # Remove trailing commas from arrays and objects
+    $jsonContent = $jsonContent -replace ',\s*([\]}])', '$1'
+
+    try {
+        # Convert JSON content to PowerShell object
+        $jsonObject = $jsonContent | ConvertFrom-Json
+        return $jsonObject
+    } catch {
+        Write-Error "Failed to parse JSON: $_"
+    }
+}
 
 
 

@@ -1,17 +1,27 @@
-param($async, $allowMultipleSessions)
+param(
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [Alias("n")]
+    [string]$scriptName,
+
+    [Parameter(Position = 1)]
+    [Alias("a")]
+    [bool]$async
+)
 $path = (Split-Path $MyInvocation.MyCommand.Path -Parent)
 Set-Location $path
-$settings = Get-Content -Path .\settings.json | ConvertFrom-Json
-$scriptName = Split-Path $path -Leaf
+. .\Helpers.ps1 -n $scriptName
+$settings = Get-Settings
+$DebugPreference = if ($settings.debug) { "Continue" } else { "SilentlyContinue" }
 # Since pre-commands in sunshine are synchronous, we'll launch this script again in another powershell process
 if ($null -eq $async) {
     Start-Process powershell.exe  -ArgumentList "-ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`" $($MyInvocation.MyCommand.UnboundArguments) -async $true" -WindowStyle Hidden
     Start-Sleep -Seconds $settings.startDelay
     exit
 }
-
-. .\Helpers.ps1
-. .\Events.ps1
+Write-Host "Script Name: $scriptName"
+. .\Helpers.ps1 -n $scriptName
+. .\Events.ps1 -n $scriptName
 
 Remove-OldLogs
 Start-Logging
@@ -33,8 +43,8 @@ try {
     
     # Asynchronously start the script, so we can use a named pipe to terminate it.
     Start-Job -Name "$($scriptName)Job" -ScriptBlock {
-        param($path, $gracePeriod)
-        . $path\Helpers.ps1
+        param($path, $scriptName, $gracePeriod)
+        . $path\Helpers.ps1 -n $scriptName
         $lastStreamed = Get-Date
 
 
@@ -58,7 +68,7 @@ try {
             }
         }
     
-    } -ArgumentList $path, $settings.gracePeriod | Out-Null
+    } -ArgumentList $path, $scriptName, $settings.gracePeriod | Out-Null
 
 
     # This might look like black magic, but basically we don't have to monitor this pipe because it fires off an event.
