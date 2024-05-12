@@ -7,6 +7,7 @@ param(
     [Alias("i")]
     [string]$install
 )
+Set-Location (Split-Path $MyInvocation.MyCommand.Path -Parent)
 $filePath = $($MyInvocation.MyCommand.Path)
 $scriptRoot = Split-Path $filePath -Parent
 $scriptPath = "$scriptRoot\StreamMonitor.ps1"
