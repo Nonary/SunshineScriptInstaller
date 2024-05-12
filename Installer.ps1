@@ -165,6 +165,8 @@ function OrderCommands($commands, $scriptName, $scriptNames){
     $after = $scriptNames.IndexOf($scriptName) + 1
     $before = $scriptNames.IndexOf($scriptName) - 1
 
+    $currentCommand = $commands | Where-Object { $_.do -like "*$scriptName*" }
+
     # If the before index is less than 0, set it to 0
     if($before -le -1){
         $before = 0
