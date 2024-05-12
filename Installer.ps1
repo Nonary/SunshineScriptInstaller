@@ -159,57 +159,56 @@ function Set-GlobalPrepCommand {
     # Write the modified config array back to the file
     $config | Set-Content -Path $confPath -Force
 }
-function ReorderScriptCommands($commands, $targetScript, $allScripts) {
-    # Create a list to store commands that might be reordered
+function OrderCommands($commands, $scriptNames) {
     $reorderedCommands = New-Object System.Collections.Generic.List[object]
     $reorderedCommands.AddRange($commands)
+    
+    foreach ($script in $scriptNames) {
+        # Get the index of the script before and after the current script in the scriptNames array
+        $after = $scriptNames.IndexOf($scriptName) + 1
+        $before = $scriptNames.IndexOf($scriptName) - 1
 
-    # Find the index of the target script within the list of all scripts
-    $nextScriptIndex = $allScripts.IndexOf($targetScript) + 1
-    $previousScriptIndex = $allScripts.IndexOf($targetScript) - 1
+        $currentCommand = $commands | Where-Object { $_.do -like "*$script*" }
 
-    # Find the command that includes the target script in its 'do' property
-    $targetCommand = $commands | Where-Object { $_.do -like "*$targetScript*" }
-    $hasReordered = $false
+        # If the before index is less than 0, set it to 0
+        if ($before -le -1) {
+            $before = 0
+        }
 
-    # Ensure the previous script index is non-negative
-    if ($previousScriptIndex -lt 0) {
-        $previousScriptIndex = 0
-    }
+        # If there is a suggested script before the current script
+        if ($before -ne 0) {
+            # Get the name of the script before the current script
+            $beforeScript = $scriptNames[$before]
+            # Get the command associated with the before script
+            $beforeCommand = $commands | Where-Object { $_.do -like "*$beforeScript*" }
+            # If the before command is after the current command in the commands array
+            if ($commands.IndexOf($beforeCommand) -gt $commands.IndexOf($currentCommand)) {
+                # Remove the before command from its current position
+                $reorderedCommands.Remove($beforeCommand)
+                # Insert the before command before the current command
+                $reorderedCommands.Insert($commands.IndexOf($currentCommand), $currentCommand)
+            }
+        }
 
-    # Handle reordering for the previous script's command if it exists
-    if ($previousScriptIndex -gt 0) {
-        $previousScript = $allScripts[$previousScriptIndex]
-        $previousCommand = $commands | Where-Object { $_.do -like "*$previousScript*" }
-        if ($commands.IndexOf($previousCommand) -gt $commands.IndexOf($targetCommand)) {
-            # Move the previous command to the position before the target command
-            $reorderedCommands.Remove($previousCommand)
-            $reorderedCommands.Insert($commands.IndexOf($targetCommand), $previousCommand)
-            $hasReordered = $true
+        # If there is a suggested script after the current script
+        if ($after -ne 0) {
+            # Get the name of the script after the current script
+            $afterScript = $scriptNames[$after]
+            # Get the command associated with the after script
+            $afterCommand = $commands | Where-Object { $_.do -like "*$afterScript*" }
+            # If the after command is before the current command in the commands array
+            if ($commands.IndexOf($afterCommand) -lt $commands.IndexOf($currentCommand)) {
+                # Remove the after command from its current position
+                $reorderedCommands.Remove($afterCommand)
+                # Insert the after command after the current command
+                $reorderedCommands.Insert($commands.IndexOf($currentCommand), $afterCommand)
+            }
         }
     }
 
-    # Handle reordering for the next script's command if it exists
-    if ($nextScriptIndex -lt $allScripts.Count) {
-        $nextScript = $allScripts[$nextScriptIndex]
-        $nextCommand = $commands | Where-Object { $_.do -like "*$nextScript*" }
-        if ($commands.IndexOf($nextCommand) -lt $commands.IndexOf($targetCommand)) {
-            # Move the next command to the position after the target command
-            $reorderedCommands.Remove($nextCommand)
-            $reorderedCommands.Insert($commands.IndexOf($targetCommand) + 1, $nextCommand)
-            $hasReordered = $true
-        }
-    }
-
-    # Recursively call the function if any reorder has occurred
-    if ($hasReordered) {
-        return ReorderScriptCommands $reorderedCommands.ToArray() $nextScript $allScripts
-    }
-    else {
-        # Return the reordered list of commands if no further reordering is needed
-        return $reorderedCommands.ToArray()
-    }
+    return $reorderedCommands
 }
+
 
 function Add-Command {
 
@@ -236,7 +235,7 @@ else {
 }
 
 if ($settings.installationOrderPreferences.enabled) {
-    $commands = OrderCommands -commands $commands -scriptName $scriptName -scriptNames $settings.installationOrderPreferences.scriptNames
+    $commands = ReorderScriptCommands $commands $settings.installationOrderPreferences.scripts
 }
 
 Set-GlobalPrepCommand $commands

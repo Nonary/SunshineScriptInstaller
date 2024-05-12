@@ -17,3 +17,14 @@ PSRemotingProtocolVersion: 2.3
 SerializationVersion: 1.1.0.1
 **********************
 Transcript started, output file is .\logs\log_2024_05_11_17_35_46.txt
+Waiting for the next event to be called... (for starting/ending stream)
+Processing event: Start
+Stream started!
+Processing event: GracePeriodExpired
+INFO: Stream has ended, now invoking code
+INFO: Ending Stream!
+INFO: This is an example of retrieving parameters in the future
+**********************
+Windows PowerShell transcript end
+End time: 20240511173848
+**********************
