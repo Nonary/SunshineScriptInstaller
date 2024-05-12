@@ -10,6 +10,8 @@ param(
 $filePath = $($MyInvocation.MyCommand.Path)
 $scriptRoot = Split-Path $filePath -Parent
 $scriptPath = "$scriptRoot\StreamMonitor.ps1"
+. .\Helpers.ps1 -n $scriptName
+$settings = Get-Settings
 
 # This script modifies the global_prep_cmd setting in the Sunshine configuration file
 
@@ -224,7 +226,9 @@ else {
     $commands = Remove-Command 
 }
 
-$commands = OrderCommands -commands $commands -scriptName $scriptName -scriptNames $settings.installationOrderPreferences.scriptNames
+if($settings.installationOrderPreferences.enabled){
+    $commands = OrderCommands -commands $commands -scriptName $scriptName -scriptNames $settings.installationOrderPreferences.scriptNames
+}
 
 Set-GlobalPrepCommand $commands
 
