@@ -157,40 +157,48 @@ function Set-GlobalPrepCommand {
     $config | Set-Content -Path $confPath -Force
 }
 
-function OrderCommands($commands){
-    if($settings.installationOrderPreferences.enabled){
-        $scriptNames = $settings.installationOrderPreferences.scriptNames
+function OrderCommands($commands, $scriptName, $scriptNames){
+    # Get the index of the script before and after the current script in the scriptNames array
+    $after = $scriptNames.IndexOf($scriptName) + 1
+    $before = $scriptNames.IndexOf($scriptName) - 1
 
-        # Create an empty array for the sorted commands
-        $sortedCommands = @()
+    # If the before index is less than 0, set it to 0
+    if($before -le -1){
+        $before = 0
+    }
 
-        # Loop through the script names in the order specified in the settings
-        foreach ($scriptName in $scriptNames) {
-            # Find the commands with the matching script name and add them to the sorted commands
-            $matchingCommands = $commands | Where-Object { 
-                $doArgs = $_.do -split ' '
-                $nIndex = $doArgs.IndexOf('-n')
-                if ($nIndex -ne -1 -and $nIndex -lt $doArgs.Count - 1) {
-                    $doArgs[$nIndex + 1] -eq $scriptName
-                } else {
-                    $false
-                }
-            }
-            $sortedCommands += $matchingCommands
-
-            # Remove the matching commands from the original commands array
-            $commands = $commands | Where-Object { $_ -notin $matchingCommands }
+    # If there is a suggested script before the current script
+    if($before -ne 0){
+        # Get the name of the script before the current script
+        $beforeScript = $scriptNames[$before]
+        # Get the command associated with the before script
+        $beforeCommand = $commands | Where-Object { $_.do -like "*$beforeScript*" }
+        # If the before command is after the current command in the commands array
+        if($commands.IndexOf($beforeCommand) -gt $commands.IndexOf($currentCommand)){
+            # Remove the before command from its current position
+            $commands.Remove($beforeCommand)
+            # Insert the before command before the current command
+            $commands.Insert($commands.IndexOf($currentCommand), $currentCommand)
         }
-
-        # Add any remaining commands that were not included in the sorted commands to the end
-        $sortedCommands += $commands
-
-        return $sortedCommands
     }
-    else {
-        # If the installation order preference is not enabled, return the commands as is
-        return $commands
+
+    # If there is a suggested script after the current script
+    if($after -ne 0){
+        # Get the name of the script after the current script
+        $afterScript = $scriptNames[$after]
+        # Get the command associated with the after script
+        $afterCommand = $commands | Where-Object { $_.do -like "*$afterScript*" }
+        # If the after command is before the current command in the commands array
+        if($commands.IndexOf($afterCommand) -lt $commands.IndexOf($currentCommand)){
+            # Remove the after command from its current position
+            $commands.Remove($afterCommand)
+            # Insert the after command after the current command
+            $commands.Insert($commands.IndexOf($currentCommand) + 1, $currentCommand)
+        }
     }
+
+    # Return the reordered commands array
+    return $commands
 }
 function Add-Command {
 
@@ -216,7 +224,7 @@ else {
     $commands = Remove-Command 
 }
 
-$commands = OrderCommands $commands
+$commands = OrderCommands -commands $commands -scriptName $scriptName -scriptNames $settings.installationOrderPreferences.scriptNames
 
 Set-GlobalPrepCommand $commands
 
