@@ -161,7 +161,12 @@ function Set-GlobalPrepCommand {
 function OrderCommands($commands, $scriptNames) {
     $orderedCommands = New-Object System.Collections.ArrayList
 
-    $orderedCommands.AddRange(@(, $commands))
+    if($commands -isnot [System.Collections.IEnumerable]) {
+        # PowerShell likes to magically change types on you, so we have to check for this
+        $commands = @(, $commands)
+    }
+
+    $orderedCommands.AddRange($commands)
 
     for ($i = 1; $i -lt $scriptNames.Count; $i++) {
         if ($i - 1 -lt 0) {
