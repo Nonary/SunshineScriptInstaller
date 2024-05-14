@@ -161,7 +161,7 @@ function Set-GlobalPrepCommand {
 function OrderCommands($commands, $scriptNames) {
     $orderedCommands = New-Object System.Collections.ArrayList
 
-    $orderedCommands.AddRange($commands)
+    $orderedCommands.AddRange(@(, $commands))
 
     for ($i = 1; $i -lt $scriptNames.Count; $i++) {
         if ($i - 1 -lt 0) {
