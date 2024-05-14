@@ -102,10 +102,10 @@ try {
             }
             elseif ($eventName -eq "GracePeriodExpired") {
                 Write-Host "Stream has been suspended beyond the defined grace period. We will now treat this as if you ended the stream. If this was unintentional or if you wish to extend the grace period, please adjust the grace period timeout in the settings.json file."
-                Wait-ForStreamEnd
+                Wait-ForStreamEndJobToComplete
             }
             else {
-                Wait-ForStreamEnd
+                Wait-ForStreamEndJobToComplete
             }
             Remove-Event -EventIdentifier $eventFired.EventIdentifier
         }

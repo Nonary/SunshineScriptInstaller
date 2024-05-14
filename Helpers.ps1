@@ -181,6 +181,14 @@ function Get-Settings {
     }
 }
 
+function Wait-ForStreamEndJobToComplete() {
+    $job = OnStreamEndAsJob
+    while ($job.State -ne "Completed") {
+        $job | Receive-Job
+        Start-Sleep -Seconds 1
+    }
+    $job | Wait-Job | Receive-Job
+}
 
 
 if ($terminate -eq 1) {
