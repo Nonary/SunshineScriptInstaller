@@ -23,6 +23,9 @@ Once you have created your project from this template, you should set up this re
      git remote add upstream https://github.com/Nonary/SunshineScriptInstaller.git
      ```
 
+
+
+
 2. **Verify the Upstream Repository**
    - To ensure the upstream repository was added correctly, you can run:
      ```
@@ -36,27 +39,33 @@ To keep your repository up-to-date with the changes made in the template, you ca
 
 1. **Fetch the Latest Changes from Upstream**
    - Run the following command to fetch the branches and their respective commits from the upstream repository:
-     ```
+     ```bash
      git fetch upstream
      ```
 
-2. **Merge the Changes from Upstream/Main into Your Branch**
-   - Ensure you are on your main branch by running:
+2. **Optional** Enable Reuse Recorded Resolution (Rerere) Feature in Git
+   - Git's `rerere` feature, short for "reuse recorded resolution", can remember and reuse your conflict resolutions. This is particularly useful when merging unrelated histories, as it can prevent the need to resolve the same conflicts repeatedly.
+   - Enable `rerere` with the following command, make sure you enable it on the correct git repository:
+     ```bash
+     git config rerere.enabled true
      ```
+
+3. **Merge the Changes from Upstream/Main into Your Branch**
+   - Ensure you are on your main branch by running:
+     ```bash
      git checkout main
      ```
    - Merge the changes from the upstream main branch:
-     ```
+     ```bash
      git merge upstream/main --squash --no-commit --allow-unrelated-histories
      ```
    - If there are no conflicts, this will update your branch with the latest changes.
 
-3. **Push the Merged Changes**
+4. **Push the Merged Changes**
    - After merging, push the changes to your GitHub repository:
-     ```
+     ```bash
      git push origin main
      ```
-
 
 ### Customizing the Script
 

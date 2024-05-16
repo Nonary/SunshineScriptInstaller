@@ -7,9 +7,12 @@ param(
     [Alias("i")]
     [string]$install
 )
+Set-Location (Split-Path $MyInvocation.MyCommand.Path -Parent)
 $filePath = $($MyInvocation.MyCommand.Path)
 $scriptRoot = Split-Path $filePath -Parent
 $scriptPath = "$scriptRoot\StreamMonitor.ps1"
+. .\Helpers.ps1 -n $scriptName
+$settings = Get-Settings
 
 # This script modifies the global_prep_cmd setting in the Sunshine configuration file
 
@@ -112,7 +115,6 @@ function Remove-Command {
     return [object[]]$filteredCommands
 }
 
-
 # Set a new value for global_prep_cmd in the configuration file
 function Set-GlobalPrepCommand {
     param (
@@ -156,6 +158,52 @@ function Set-GlobalPrepCommand {
     # Write the modified config array back to the file
     $config | Set-Content -Path $confPath -Force
 }
+function OrderCommands($commands, $scriptNames) {
+    $orderedCommands = New-Object System.Collections.ArrayList
+
+    if($commands -isnot [System.Collections.IEnumerable]) {
+        # PowerShell likes to magically change types on you, so we have to check for this
+        $commands = @(, $commands)
+    }
+
+    $orderedCommands.AddRange($commands)
+
+    for ($i = 1; $i -lt $scriptNames.Count; $i++) {
+        if ($i - 1 -lt 0) {
+            continue
+        }
+
+        $before = $scriptNames[$i - 1]
+        $after = $scriptNames[$i]
+
+        $afterCommand = $orderedCommands | Where-Object { $_.do -like "*$after*" -or $_.undo -like "*$after*" } | Select-Object -First 1
+
+        $beforeIndex = $null
+        for ($j = 0; $j -lt $orderedCommands.Count; $j++) {
+            if ($orderedCommands[$j].do -like "*$before*" -or $orderedCommands[$j].undo -like "*$before*") {
+                $beforeIndex = $j
+                break
+            }
+        }
+        $afterIndex = $null
+        for ($j = 0; $j -lt $orderedCommands.Count; $j++) {
+            if ($orderedCommands[$j].do -like "*$after*" -or $orderedCommands[$j].undo -like "*$after*") {
+                $afterIndex = $j
+                break
+            }
+        }
+
+        if ($null -ne $afterIndex -and ($afterIndex -lt $beforeIndex)) {
+            $orderedCommands.RemoveAt($afterIndex)
+            $orderedCommands.Insert($beforeIndex, $afterCommand)
+
+        }
+
+    }
+
+    $orderedCommands
+
+}
 
 function Add-Command {
 
@@ -181,9 +229,13 @@ else {
     $commands = Remove-Command 
 }
 
+if ($settings.installationOrderPreferences.enabled) {
+    $commands = OrderCommands $commands $settings.installationOrderPreferences.scriptNames
+}
+
 Set-GlobalPrepCommand $commands
 
-$sunshineService = Get-Service -ErrorAction Ignore | Where-Object {$_.Name -eq 'sunshinesvc' -or $_.Name -eq 'SunshineService'}
+$sunshineService = Get-Service -ErrorAction Ignore | Where-Object { $_.Name -eq 'sunshinesvc' -or $_.Name -eq 'SunshineService' }
 # In order for the commands to apply we have to restart the service
 $sunshineService | Restart-Service  -WarningAction SilentlyContinue
 Write-Host "If you didn't see any errors, that means the script installed without issues! You can close this window."
